@@ -9,13 +9,20 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.api.model.UserDTO;
 import com.example.api.ApiApplication;
 import com.example.api.model.NewUser;
+import com.example.api.model.UpdateUserRequest;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 import com.example.api.service.UserService;
 import java.util.List;
+import java.lang.Long;
 import com.example.api.defs.http_responses.user.ApiResponse;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.api.config.SecurityConfig;
 
 // public class ConvertToString {
 //   public ConvertToString() {}
@@ -42,6 +49,7 @@ public class UserController {
   }
 
   @GetMapping(value="/user", produces="application/json")
+  @PreAuthorize("hasRole(ROLE_ADMIN)")
   public ResponseEntity<ApiResponse<UserDTO>> getUser(
     @RequestParam(value="id", required=false) Long id,
     @RequestParam(value="username", required=false) String username,
@@ -74,6 +82,7 @@ public class UserController {
   }
 
   @GetMapping("/users")
+  @PreAuthorize("hasRole(ROLE_ADMIN)")
   public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers() {
     try {
       List<UserDTO> users = userService.getAllUsers();
@@ -84,7 +93,31 @@ public class UserController {
     }
   }
 
-  @PostMapping("/users")
+  @GetMapping("/email-available")
+  @PreAuthorize("hasRole(ROLE_ADMIN)")
+  public ResponseEntity<ApiResponse<Boolean>> emailAvailable(@RequestParam(value="email") String email) {
+    try {
+      Boolean emailIsAvailable = userService.isEmailAvailable(email);
+
+      return ResponseEntity.status(HttpStatus.OK.value()).body(ApiResponse.success(emailIsAvailable));
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+    }
+  }
+
+  @GetMapping("/username-available")
+  @PreAuthorize("hasRole(ROLE_ADMIN)")
+  public ResponseEntity<ApiResponse<Boolean>> usernameAvailable(@RequestParam(value="username") String username) {
+    try {
+      Boolean usernameIsAvailable = userService.isUsernameAvailable(username);
+
+      return ResponseEntity.status(HttpStatus.OK.value()).body(ApiResponse.success(usernameIsAvailable));
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+    }
+  }
+
+  @PostMapping("/user")
   public ResponseEntity<ApiResponse<UserDTO>> createUser(@RequestBody NewUser user) {
     try {
       UserDTO createdUser = userService.createUser(user);
@@ -96,10 +129,21 @@ public class UserController {
     }
   }
 
-  @GetMapping("/email-available")
-  public ResponseEntity<ApiResponse<Boolean>> emailAvailable(@RequestParam(value="email") String email) {
-    
-    return ResponseEntity.status(HttpStatus.OK.value()).body(ApiResponse.success(true));
+  @PutMapping("/user")
+  // @PreAuthorize("@customAuthorization.isAuthorized()")
+  public ResponseEntity<ApiResponse<UserDTO>> updateUser(
+    @RequestBody UpdateUserRequest updateRequest) {
+    try {
+      if (updateRequest == null || (updateRequest.getPassword() == null && updateRequest.getFirstName() == null && updateRequest.getLastName() == null)) {
+        return ResponseEntity.badRequest().body(ApiResponse.error("At least 1 argument to update is required in the request."));
+      }
+      
+      UserDTO updatedUser = userService.updateUser(updateRequest.getUserId(), updateRequest);
+      return ResponseEntity.status(HttpStatus.CREATED.value()).body(ApiResponse.success(updatedUser, "User updated successfully"));
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+        .body(ApiResponse.error(e.getMessage()));
+    }
   }
 }
 
