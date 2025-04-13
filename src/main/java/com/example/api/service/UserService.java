@@ -42,25 +42,31 @@ public class UserService {
     return userDTO;
   }
 
-  public UserDTO getUserById(@NotNull(message="ID argument is required") Long id) {
+  public UserDTO getUserById(@NotNull(message="id argument is required") Long id) {
     User user = this.userRepository.findUserById(id);
-    UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getEmail());
-    return userDTO;
+    if (user == null) {
+      return null;
+    }
+    return new UserDTO(user.getId(), user.getUsername(), user.getEmail());
   }
 
-  public UserDTO getUserByUsername(@NotNull(message="Username argument is required") String username) {
+  public UserDTO getUserByUsername(@NotNull(message="username argument is required") String username) {
     User user = this.userRepository.findUserByUsername(username);
-    UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getEmail());
-    return userDTO;
+    if (user == null) {
+      return null;
+    }
+    return new UserDTO(user.getId(), user.getUsername(), user.getEmail());
   }
 
   public UserDTO getUserByEmail(
-    @NotNull(message="Email is required") 
+    @NotNull(message="email argument is required") 
     @Email(message="Please provide a valid email address") 
     String email) {
     User user = this.userRepository.findUserByEmail(email);
-    UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getEmail());
-    return userDTO;
+    if (user == null) {
+      return null;
+    }
+    return new UserDTO(user.getId(), user.getUsername(), user.getEmail());
   }
 
   public List<UserDTO> getAllUsers() {
