@@ -9,8 +9,11 @@ import com.example.api.model.UserDTO;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.api.Utils;
 
 @Service
 public class UserService {
@@ -18,12 +21,19 @@ public class UserService {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private Utils utils;
+
   public UserService(UserRepository userRepository) {
     this.userRepository = userRepository;
     System.out.println("UserService!");
   }
 
   public UserDTO createUser(NewUser newUser) {
+    System.out.println(newUser);
+    System.out.println(newUser);
+    System.out.println(newUser);
+    System.out.println(newUser);
     // Check if user with this email already exists
     User existingUser = this.userRepository.findUserByEmail(newUser.getEmail());
     if (existingUser != null) {
@@ -35,8 +45,9 @@ public class UserService {
     if (existingUser != null) {
       throw new IllegalArgumentException("A user with this username already exists");
     }
-
-    User user = new User(newUser.getUsername(), newUser.getEmail(), newUser.getPassword());
+    String hashed_password = utils.hashPassword(newUser.getPassword());
+    System.out.println("Hashed password = " + hashed_password);
+    User user = new User(newUser.getUsername(), newUser.getEmail(), hashed_password);
     this.userRepository.save(user);
     UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getEmail());
     return userDTO;

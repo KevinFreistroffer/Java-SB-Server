@@ -95,5 +95,11 @@ public class UserController {
         .body(ApiResponse.error(e.getMessage()));
     }
   }
+
+  @GetMapping("/email-available")
+  public ResponseEntity<ApiResponse<Boolean>> emailAvailable(@RequestParam(value="email") String email) {
+    
+    return ResponseEntity.status(HttpStatus.OK.value()).body(ApiResponse.success(true));
+  }
 }
 
