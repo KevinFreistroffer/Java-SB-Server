@@ -15,6 +15,17 @@ import org.springframework.http.HttpStatus;
 import jakarta.validation.Valid;
 import com.example.api.service.UserService;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Stream;
+import java.util.Arrays;
+
+// public class ConvertToString {
+//   public ConvertToString() {}
+
+//   public String convert(Integer value) {
+//     return value.toString();
+//   }
+// }
 
 @RestController
 public class UserController {
@@ -60,17 +71,34 @@ public class UserController {
 
   @GetMapping("/users")
   public ResponseEntity<?> getAllUsers() {
+    Integer[] nums = {1,2,3,4,5};
+    List<Integer> nums_list = new ArrayList<Integer>();
+    nums_list.addAll(Arrays.asList(nums));
+
+    
+    class ConvertToString {
+      String convert(Integer value) {
+        String v = value.toString();
+        System.out.println("V=====" + v);
+        return v;
+      }
+    }
+    ConvertToString converter = new ConvertToString();
+    String[] sStrings = 
+      nums_list
+      .stream()
+      .map(v -> converter.convert(v))
+      .toArray(String[]::new);
+
+    Arrays.stream(sStrings).forEach(s -> System.out.println(s));
+    Arrays.stream(sStrings).forEach(System.out::println);
+
     try {
       List<UserDTO> users = userService.getAllUsers();
       return ResponseEntity.ok(users);
     } catch (Exception e) {
-      System.out.println("Errorz " + e.getMessage());
-      System.out.println("Errorz " + e.getMessage());
-      System.out.println("Errorz " + e.getMessage());
-      System.out.println("Errorz " + e.getMessage());
-      System.out.println("Errorz " + e.getMessage());
-      System.out.println("Errorz " + e.getMessage());
-      return ResponseEntity.badRequest().body("Could not get users. Error: " + e.getMessage());
+      System.out.println("Error " + e.getMessage());
+      return ResponseEntity.badRequest().body("Error getting users: " + e.getMessage());
     }
   }
 
